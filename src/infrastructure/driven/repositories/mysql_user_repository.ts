@@ -1,13 +1,17 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { type User } from '../../../domain/models/User'
 import { type UserRepository } from '../../../domain/repositories/user_repository'
-import { connectDb } from '../mysql/mysql_connection'
 
 export class MySqlUserRepository implements UserRepository {
+  private readonly db: any
+
+  constructor (db: any) {
+    this.db = db
+  }
+
   async searchAll (): Promise<User[]> {
     try {
-      const db = await connectDb()
-      const [rows] = await db.query('SELECT * FROM customers')
+      const [rows] = await this.db.query('SELECT * FROM customers')
       let users: User[]
       if (Array.isArray(rows)) {
         users = rows.map((row: any) => {
@@ -29,14 +33,13 @@ export class MySqlUserRepository implements UserRepository {
 
   async create (user: User): Promise<void> {
     try {
-      const db = await connectDb()
       const queryString = `
         INSERT INTO customers
         (name, email)
         VALUES ('${user.name}', '${user.email}')
       `
 
-      db.query(queryString)
+      await this.db.query(queryString)
     } catch (error: any) {
       throw new Error(error.message)
     }
@@ -44,8 +47,7 @@ export class MySqlUserRepository implements UserRepository {
 
   async searchById (id: string): Promise<User | null> {
     try {
-      const db = await connectDb()
-      const [rows] = await db.query(`SELECT * FROM customers WHERE customers.id = ${id}`)
+      const [rows] = await this.db.query(`SELECT * FROM customers WHERE customers.id = ${id}`)
       let users: User[]
       if (Array.isArray(rows)) {
         users = rows.map((row: any) => {
@@ -67,14 +69,13 @@ export class MySqlUserRepository implements UserRepository {
 
   async update (user: User): Promise<void> {
     try {
-      const db = await connectDb()
       const queryString = `
         UPDATE customers
         SET name = '${user.name}', email = '${user.email}'
         WHERE customers.id = ${user.id}
       `
 
-      db.query(queryString)
+      await this.db.query(queryString)
     } catch (error: any) {
       throw new Error(error.message)
     }
@@ -82,13 +83,12 @@ export class MySqlUserRepository implements UserRepository {
 
   async delete (id: string): Promise<void> {
     try {
-      const db = await connectDb()
       const queryString = `
         DELETE FROM customers
         WHERE customers.id = ${id}
       `
 
-      db.query(queryString)
+      await this.db.query(queryString)
     } catch (error: any) {
       throw new Error(error.message)
     }

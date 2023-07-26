@@ -7,6 +7,12 @@ module.exports = {
   ],
   coveragePathIgnorePatterns: [
     './node_modules',
-    './test/mocks'
+    './test/mocks',
+    './dist',
+    './src/infrastructure/configuration',
+    './src/infrastructure/driving/routes'
+  ],
+  testPathIgnorePatterns: [
+    './dist/test'
   ]
 }

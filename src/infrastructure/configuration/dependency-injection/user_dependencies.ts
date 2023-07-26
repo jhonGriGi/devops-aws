@@ -11,8 +11,10 @@ import { SearchAllService } from '../../../application/services/search_all_servi
 import { UpdateUserService } from '../../../application/services/update_user_service'
 import { DeleteUserService } from '../../../application/services/delete_user_service'
 import { CreateUserController, DeleteUserController, SearchAllController, SearchSpecificUserController, UpdateUserController } from '../../driving/controllers'
+import { connectDb } from '../../driven/mysql/mysql_connection'
 
-const userRepository = new MySqlUserRepository()
+const db = connectDb().then((value) => value)
+const userRepository = new MySqlUserRepository(db)
 const userMapper = new UserMapper()
 
 const userCreateUseCase = new CreateUserOnRegister(userRepository)
