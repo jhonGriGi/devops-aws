@@ -64,8 +64,41 @@ jobs:
       - name: Configure Error Mock Connection
         id: configure_error_mock
         run: |
-          echo '{"text": "¡Ha ocurrido un error en el pipeline! Revisa los detalles en GitHub Actions."}' > error_mock_payload.json
-      
+          echo '{
+            "text": "¡Ha ocurrido un error en el job SendErrorNotification! Revisa los detalles en GitHub Actions.",
+            "attachments": [
+              {
+                "title": "Detalles del job:",
+                "fields": [
+                  {
+                    "title": "Tiempo de ejecución:",
+                    "value": "${{ job.completed_at }} - ${{ job.started_at }}",
+                    "short": true
+                  }
+                ]
+              },
+              {
+                "title": "Resultados de los jobs anteriores:",
+                "fields": [
+                  {
+                    "title": "SonarCloud:",
+                    "value": "${{ needs.SonarCloud.result }}",
+                    "short": true
+                  },
+                  {
+                    "title": "BuildAndPushImageToECR:",
+                    "value": "${{ needs.BuildAndPushImageToECR.result }}",
+                    "short": true
+                  }
+                ]
+              },
+              {
+                "title": "Enlace al registro del job:",
+                "text": "Ver detalles del job SendErrorNotification: ${{ job.statuses_url }}"
+              }
+            ]
+          }' > error_mock_payload.json
+
       - name: Send Google Chat error notification
         env:
           GOOGLE_CHAT_WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
@@ -80,8 +113,37 @@ jobs:
     steps:
       - name: Configure Success Mock Connection
         id: configure_success_mock
-        run: | 
-          echo '{"text": "¡El pipeline ha finalizado con éxito! Puedes revisar los resultados en GitHub Actions."}' > success_mock_payload.json
+        run: |
+          echo '{
+            "text": "¡El job SendSuccessNotification ha finalizado con éxito!",
+            "attachments": [
+              {
+                "title": "Detalles del job:",
+                "fields": [
+                  {
+                    "title": "Tiempo de ejecución:",
+                    "value": "${{ job.completed_at }} - ${{ job.started_at }}",
+                    "short": true
+                  }
+                ]
+              },
+              {
+                "title": "Resultados de los jobs anteriores:",
+                "fields": [
+                  {
+                    "title": "SonarCloud:",
+                    "value": "${{ needs.SonarCloud.result }}",
+                    "short": true
+                  },
+                  {
+                    "title": "BuildAndPushImageToECR:",
+                    "value": "${{ needs.BuildAndPushImageToECR.result }}",
+                    "short": true
+                  }
+                ]
+              }
+            ]
+          }' > success_mock_payload.json
 
       - name: Send Google Chat success notification
         env:
