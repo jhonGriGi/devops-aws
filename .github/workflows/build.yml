@@ -24,8 +24,10 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   
   BuildAndPushImageToECR:
+    needs: [SonarCloud]
     name: "Build and Push to ECR"
     runs-on: ubuntu-latest
+    if: success()
 
     steps:
       - name: Checkout Repository
@@ -71,7 +73,7 @@ jobs:
           curl -X POST -H 'Content-Type: application/json' --data "@error_mock_payload.json" $GOOGLE_CHAT_WEBHOOK
 
   SendSuccessNotification:
-    needs: [BuildAndPushImageToECR]
+    needs: [SonarCloud, BuildAndPushImageToECR]
     runs-on: ubuntu-latest
     if: success()
 
