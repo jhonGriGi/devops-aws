@@ -14,7 +14,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.get('/', (_req: Request, res: Response) => {
   res.status(200)
     .send({
-      message: 'Hello from server api'
+      message: 'Hello from server api after pipeline integration'
     })
 })
 

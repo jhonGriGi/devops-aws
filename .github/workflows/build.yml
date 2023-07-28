@@ -6,9 +6,28 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
+  SendStartNotification:
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Configure start Mock Connection
+        id: configure_success_mock
+        run: | 
+          echo '{"text": "¡El pipeline ha iniciado con éxito! Puedes revisar los resultados en GitHub Actions."}' > success_mock_payload.json
+
+      - name: Send Google Chat start notification
+        env:
+          GOOGLE_CHAT_WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+        run: |
+          curl -X POST -H 'Content-Type: application/json' --data "@success_mock_payload.json" $GOOGLE_CHAT_WEBHOOK
+
   SonarCloud:
+    needs: [SendStartNotification]
     name: SonarCloud
     runs-on: ubuntu-latest
+    if: success()
+    
     steps:
       - uses: actions/checkout@v3
         with:
@@ -55,6 +74,10 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
   
+      - name: Update ECS service
+        run: |
+          aws ecs update-service --cluster ${{ secrets.ECS_CLUSTER }} --service ${{ secrets.ECS_SERVICE }} --force-new-deployment
+
   SendErrorNotification:
     needs: [SonarCloud, BuildAndPushImageToECR]
     runs-on: ubuntu-latest
